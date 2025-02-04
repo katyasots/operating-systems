@@ -1,0 +1,19 @@
+F S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD
+0 S  1000   32771   32740  0  80   0 -  2852 do_wai pts/0    00:00:00 bash
+0 S  1000   33292   32771  0  80   0 -  1514 do_wai pts/0    00:00:00 signal
+0 S  1000   33295   33292  0  80   0 -  1514 hrtime pts/0    00:00:00 son1
+0 S  1000   33299   33292  0  80   0 -  1514 hrtime pts/0    00:00:00 son2
+0 S  1000   33303   33292  0  80   0 -  1514 hrtime pts/0    00:00:00 son3
+0 S  1000   33304   33292  0  80   0 -  1543 do_wai pts/0    00:00:00 sh
+4 R  1000   33305   33304  0  80   0 -  3998 -      pts/0    00:00:00 ps
+
+
+
+F S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD
+0 S  1000   32771   32740  0  80   0 -  2852 do_wai pts/0    00:00:00 bash
+0 S  1000   33292   32771  0  80   0 -  1514 do_wai pts/0    00:00:00 signal
+0 Z  1000   33295   33292  0  80   0 -     0 -      pts/0    00:00:00 son1 <defunct>
+0 S  1000   33299   33292  0  80   0 -  1514 hrtime pts/0    00:00:00 son2
+0 Z  1000   33303   33292  0  80   0 -     0 -      pts/0    00:00:00 son3 <defunct>
+0 S  1000   33307   33292  0  80   0 -  1543 do_wai pts/0    00:00:00 sh
+4 R  1000   33308   33307  0  80   0 -  3998 -      pts/0    00:00:00 ps

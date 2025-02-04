@@ -1,0 +1,714 @@
+(base) katya@katya:~/os/lb6$ gcc task8.c -o task8
+(base) katya@katya:~/os/lb6$ cat task8.c
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h>
+#include <string.h>
+#define DEF_F_R "8from.txt" 
+#define DEF_F_W "8to.txt" 
+
+
+int main(int argc, char** argv) { 
+    char fileToRead[32]; 
+    char fileToWrite[32];
+    if(argc < 3 ){ 
+        printf("Using default fileNames '%s','%s'\n",DEF_F_R,DEF_F_W);
+        strcpy(fileToRead,DEF_F_R);
+        strcpy(fileToWrite,DEF_F_W);
+    } 
+    else{
+        strcpy(fileToRead, argv[1]);
+        strcpy(fileToWrite, argv[2]);
+    }
+    int filedes[2];
+    if(pipe(filedes) < 0){
+        printf("Father: can't create pipe\n");
+        exit(1);
+    }
+    printf("pipe is successfully created\n");
+
+        //процесс-сын
+    if(fork() == 0){
+        //закрытие дескриптора канала на чтение
+        close(filedes[0]);
+        
+        // открытие файла на чтение
+        FILE* f = fopen(fileToRead, "r");
+        if(!f){
+            printf("Son: can't open file %s\n", fileToRead);
+            exit(1);
+        }
+        char buf[100];
+        int res;
+        while(!feof(f)){
+            // чтение данных из файла
+            res = fread(buf, sizeof(char), 100, f);
+            // запись прочитанной строки в канал
+            write(filedes[1], buf, res); 
+        }
+        // закрытие файла из канала
+        fclose(f);
+        close(filedes[1]);
+        return 0;
+    }
+
+        // процесс-родитель
+    //закрыте дескриптора канала на запись
+    close(filedes[1]);
+    // открытие файла для записи
+    FILE *f = fopen(fileToWrite, "w");
+    if(!f){
+        printf("Father: can't open file %s\n", fileToWrite);
+        exit(1);
+    }
+    char buf[100];
+    int res;
+    while(1){
+        // чтение из канала строки
+        bzero(buf, 100);
+        res = read(filedes[0], buf, 100);
+        if(!res) break;
+        printf("Read from pipe: %s\n", buf);
+        // запись прочитанной строки в файл
+        fwrite(buf, sizeof(char), res, f);
+    }
+    fclose(f);
+    close(filedes[0]);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ gcc task8.c -o task8
+(base) katya@katya:~/os/lb6$ ./task8
+Using default fileNames '8from.txt','8to.txt'
+pipe is successfully created
+Read from pipe: 1 Sots
+2 Ekateryna
+3 2384
+4 lab rab 6
+
+(base) katya@katya:~/os/lb6$ cat 8from.txt
+1 Sots
+2 Ekateryna
+3 2384
+4 lab rab 6
+(base) katya@katya:~/os/lb6$ cat 8to.txt
+1 Sots
+2 Ekateryna
+3 2384
+4 lab rab 6
+
+
+(base) katya@katya:~/os/lb6$ cat 9server.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define DEF_FILENAME "8from.txt" 
+
+int main(int argc, char **argv){
+    char fileName[30];
+    if(argc < 2){
+        printf("Using default file name '%s'\n", DEF_FILENAME);
+        strcpy(fileName, DEF_FILENAME);
+    }else{
+        strcpy(fileName, argv[1]);
+    }
+
+    // cоздание именованныx каналов
+    mknod("channel_write", S_IFIFO | 0666, 0);
+    mknod("channel_read", S_IFIFO | 0666, 0);
+
+    //открытие первого канала
+    int chan1 = open("channel_write", O_WRONLY);
+    if(chan1 == -1){
+        printf("Can't open channel for writing\n");
+        exit(0);
+    }
+    // открытие второго канала
+    int chan2 = open("channel_read", O_RDONLY);
+    if(chan2 == -1){
+        printf("Can't open channel for reading\n");
+        exit(0);
+    }
+
+    // запись имени файла в первый канал
+    write(chan1, fileName, strlen(fileName));
+    // чтение содержимого файла из второго канала
+    char buf[100];
+    for (;;){
+        bzero(buf, 100);
+        if(read(chan2, buf, 100) <= 0) break;
+        printf("Part of file: %s\n", buf);
+    }
+
+    // закрытие каналов
+    close(chan1);
+    close(chan2);
+    unlink("channel_write");
+    unlink("channel_read");
+    return 0;
+}(base) katya@katya:~/os/lb6$ cat 9client.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+ 
+
+int main(int argc, char** argv){
+    // открытие канала для чтения, где записано имя канала для записи
+    int chan1 = open("channel_write", O_RDONLY);
+    if(chan1 == -1){
+        printf("Can't open channel for reading\n");
+        exit(0);
+    }
+    // открытие канала для записи
+    int chan2 = open("channel_read", O_WRONLY);
+    if(chan2 == -1){
+        printf("Can't open channel for reading\n");
+        exit(0);
+    }
+    
+    // чтение имени файла из первого канала
+    char fileName[100];
+    bzero(fileName, 100);
+    int res = read(chan1, fileName, 100);
+    if(res <= 0){
+        printf("Can't read filename from channel1\n");
+        exit(0);
+    }
+
+    // открытие файла на чтение
+    FILE *f = fopen(fileName, "r");
+    if(!f){
+        printf("Can't open file %s\n", fileName);
+        exit(0);
+    }
+    char buf[100];
+    while(!feof(f)){
+        // чтение данных из файла
+        int res = fread(buf, sizeof(char), 100, f);
+        // запись их в канал
+        write(chan2, buf, res);
+    }
+    fclose(f);
+    // закрытие каналов
+    close(chan1);
+    close(chan2);
+    return 0;
+}(base) katya@katya:~/os/lb6$ gcc 9server.c -o 9server
+(base) katya@katya:~/os/lb6$ gcc 9client.c -o 9client
+(base) katya@katya:~/os/lb6$ ./9server
+Using default file name '8from.txt'
+Part of file: 1 Sots
+2 Ekateryna
+3 2384
+4 lab rab 6
+
+(base) katya@katya:~/os/lb6$ cat 9lim.c
+#include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
+
+int main() {
+    printf("PIPE_BUF: %d\n", PIPE_BUF);
+    long open_max = sysconf(_SC_OPEN_MAX);
+    printf("OPEN_MAX: %ld\n", open_max);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ ./9lim
+PIPE_BUF: 4096
+OPEN_MAX: 1024
+
+
+
+(base) katya@katya:~/os/lb6$ cat task10.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <string.h>
+
+typedef struct
+{
+    long type;
+    char buf[64];
+} Message;
+
+
+int main(int argc, char **argv)
+{
+    // id очереди по ее ключу
+    int qid = msgget((key_t)atoi(argv[1]), IPC_CREAT | 0666);
+
+    // отправка сообщений в ящик
+    Message msg1 = {1, "first message"};
+    Message msg2 = {2, "second message"};
+    msgsnd(qid, &msg1, strlen(msg1.buf) + 1, 0);
+    msgsnd(qid, &msg2, strlen(msg2.buf) + 1, 0);
+
+    // получение сообщений из очереди
+    // Message rmsg1;
+    // Message rmsg2;
+    // msgrcv(qid, &rmsg1, 64, 1, 0);
+    // msgrcv(qid, &rmsg2, 64, 2, 0);
+    // printf("message with type %ld recieved: %s\n", rmsg1.type, rmsg1.buf);
+    // printf("message with type %ld recieved: %s\n", rmsg2.type, rmsg2.buf);
+
+    // удаление очереди
+    // msgctl(qid, IPC_RMID, 0);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ gcc task10.c -o task10
+(base) katya@katya:~/os/lb6$ ./task10
+Ошибка сегментирования (образ памяти сброшен на диск)
+(base) katya@katya:~/os/lb6$ ./task10 10
+(base) katya@katya:~/os/lb6$ ipcs
+
+------ Очереди сообщений --------
+ключ   msqid      владелец права исп. байты сообщения
+0x0000000a 0          katya      666        29           2           
+
+------ Сегменты совм. исп. памяти --------
+ключ   shmid      владелец права байты nattch     состояние
+0x00000000 9          katya      600        524288     2          назначение       
+0x00000000 14         katya      600        524288     2          назначение       
+0x00000000 20         katya      600        524288     2          назначение       
+0x00000000 24         katya      600        524288     2          назначение       
+0x00000000 25         katya      600        4194304    2          назначение       
+0x00000000 28         katya      600        524288     2          назначение       
+0x00000000 30         katya      606        6304800    2          назначение       
+0x00000000 31         katya      606        6304800    2          назначение       
+0x00000000 40         katya      600        524288     2          назначение       
+0x00000000 43         katya      600        524288     2          назначение       
+0x00000000 45         katya      600        4194304    2          назначение       
+
+------ Массивы семафоров --------
+ключ   semid      владелец права nsems  
+
+
+(base) katya@katya:~/os/lb6$ cat task10.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <string.h>
+
+typedef struct
+{
+    long type;
+    char buf[64];
+} Message;
+
+
+int main(int argc, char **argv)
+{
+    // id очереди по ее ключу
+    int qid = msgget((key_t)atoi(argv[1]), IPC_CREAT | 0666);
+
+    // отправка сообщений в ящик
+    // Message msg1 = {1, "first message"};
+    // Message msg2 = {2, "second message"};
+    // msgsnd(qid, &msg1, strlen(msg1.buf) + 1, 0);
+    // msgsnd(qid, &msg2, strlen(msg2.buf) + 1, 0);
+
+    // получение сообщений из очереди
+    Message rmsg1;
+    Message rmsg2;
+    msgrcv(qid, &rmsg1, 64, 1, 0);
+    msgrcv(qid, &rmsg2, 64, 2, 0);
+    printf("message with type %ld recieved: %s\n", rmsg1.type, rmsg1.buf);
+    printf("message with type %ld recieved: %s\n", rmsg2.type, rmsg2.buf);
+
+    // удаление очереди
+    // msgctl(qid, IPC_RMID, 0);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ gcc task10.c -o task10
+(base) katya@katya:~/os/lb6$ ./task10 10
+message with type 1 recieved: first message
+message with type 2 recieved: second message
+(base) katya@katya:~/os/lb6$ ipcs
+
+------ Очереди сообщений --------
+ключ   msqid      владелец права исп. байты сообщения
+0x0000000a 0          katya      666        0            0           
+
+------ Сегменты совм. исп. памяти --------
+ключ   shmid      владелец права байты nattch     состояние
+0x00000000 9          katya      600        524288     2          назначение       
+0x00000000 14         katya      600        524288     2          назначение       
+0x00000000 20         katya      600        524288     2          назначение       
+0x00000000 24         katya      600        524288     2          назначение       
+0x00000000 25         katya      600        4194304    2          назначение       
+0x00000000 28         katya      600        524288     2          назначение       
+0x00000000 30         katya      606        6304800    2          назначение       
+0x00000000 31         katya      606        6304800    2          назначение       
+0x00000000 40         katya      600        524288     2          назначение       
+0x00000000 43         katya      600        524288     2          назначение       
+0x00000000 45         katya      600        4194304    2          назначение       
+
+------ Массивы семафоров --------
+ключ   semid      владелец права nsems 
+
+
+(base) katya@katya:~/os/lb6$ cat task10.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <string.h>
+
+typedef struct
+{
+    long type;
+    char buf[64];
+} Message;
+
+
+int main(int argc, char **argv)
+{
+    // id очереди по ее ключу
+    int qid = msgget((key_t)atoi(argv[1]), IPC_CREAT | 0666);
+
+    // отправка сообщений в ящик
+    // Message msg1 = {1, "first message"};
+    // Message msg2 = {2, "second message"};
+    // msgsnd(qid, &msg1, strlen(msg1.buf) + 1, 0);
+    // msgsnd(qid, &msg2, strlen(msg2.buf) + 1, 0);
+
+    // получение сообщений из очереди
+    // Message rmsg1;
+    // Message rmsg2;
+    // msgrcv(qid, &rmsg1, 64, 1, 0);
+    // msgrcv(qid, &rmsg2, 64, 2, 0);
+    // printf("message with type %ld recieved: %s\n", rmsg1.type, rmsg1.buf);
+    // printf("message with type %ld recieved: %s\n", rmsg2.type, rmsg2.buf);
+
+    // удаление очереди
+    msgctl(qid, IPC_RMID, 0);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ gcc task10.c -o task10
+(base) katya@katya:~/os/lb6$ ./task10 10
+(base) katya@katya:~/os/lb6$ gcc task10.c -o task10
+(base) katya@katya:~/os/lb6$ ipcs
+
+------ Очереди сообщений --------
+ключ   msqid      владелец права исп. байты сообщения
+
+------ Сегменты совм. исп. памяти --------
+ключ   shmid      владелец права байты nattch     состояние
+0x00000000 9          katya      600        524288     2          назначение       
+0x00000000 14         katya      600        524288     2          назначение       
+0x00000000 20         katya      600        524288     2          назначение       
+0x00000000 24         katya      600        524288     2          назначение       
+0x00000000 25         katya      600        4194304    2          назначение       
+0x00000000 28         katya      600        524288     2          назначение       
+0x00000000 30         katya      606        6304800    2          назначение       
+0x00000000 31         katya      606        6304800    2          назначение       
+0x00000000 40         katya      600        524288     2          назначение       
+0x00000000 43         katya      600        524288     2          назначение       
+0x00000000 45         katya      600        4194304    2          назначение       
+
+------ Массивы семафоров --------
+ключ   semid      владелец права nsems     
+
+ 
+ 
+ (base) katya@katya:~/os/lb6$ cat 12client.c
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+
+#define SERVER_PORT 8888
+#define SERVER_IP "127.0.0.1"
+
+int readFix(int sock, char *buf, int size, int flags)
+{   
+    // читаем "заголовок" - сколько байт составляет наше сообщение
+    unsigned msg_len = 0;
+    int res = recv(sock, &msg_len, sizeof(unsigned), flags | MSG_WAITALL);
+    if (res <= 0)
+        return res;
+    // читаем само сообщение
+    return recv(sock, buf, msg_len, flags | MSG_WAITALL);
+}
+
+int sendFix(int sock, char *buf, int flags)
+{
+    // шлем число байт в сообщение
+    unsigned msg_len = strlen(buf);
+    int res = send(sock, &msg_len, sizeof(unsigned), flags);
+    if (res <= 0)
+        return res;
+    return send(sock, buf, msg_len, flags);
+}
+
+
+int main()
+{
+    // создаем  сокет, подключаемся к серверу
+    struct sockaddr_in peer;
+    peer.sin_family = AF_INET;
+    peer.sin_port = htons(SERVER_PORT);
+    peer.sin_addr.s_addr = inet_addr(SERVER_IP);
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    connect(sock, (struct sockaddr*)&peer, sizeof(peer));
+    
+    char buf[100];
+    while (1) {
+        printf("Сообщение для отправки на сервер:\n");
+        bzero(buf, 100);
+        fgets(buf, 100, stdin);
+        buf[strlen(buf)-1] = '\0';
+        if(strlen(buf) == 0){
+            printf("Завершение работы клиетна\n");
+            return 0;
+        }
+        int res = sendFix(sock, buf, 0);
+        if(res<0){
+            perror("Ошибка отправки\n");
+            exit(1);
+        }
+        bzero(buf, 100);
+        res = readFix(sock, buf, 100, 0);
+        printf("Ответ сервера: %s\n", buf);
+    }
+    
+}
+
+
+(base) katya@katya:~/os/lb6$ ./12client
+Сообщение для отправки на сервер:
+hello
+Ответ сервера: hello
+Сообщение для отправки на сервер:
+katya sots
+Ответ сервера: katya sots
+Сообщение для отправки на сервер:
+2384!
+Ответ сервера: 2384!
+Сообщение для отправки на сервер:
+
+Завершение работы клиетна
+
+(base) katya@katya:~/os/lb6$ ./task12
+Пустое сообщение от клиента, поток завершается
+
+
+(base) katya@katya:~/os/lb6$ ifconfig
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Локальная петля (Loopback))
+        RX packets 17605  bytes 1764637 (1.7 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 17605  bytes 1764637 (1.7 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+wlp1s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.20.10.2  netmask 255.255.255.240  broadcast 172.20.10.15
+        inet6 fe80::86ca:5cc3:df07:c629  prefixlen 64  scopeid 0x20<link>
+        ether 14:13:33:05:6e:35  txqueuelen 1000  (Ethernet)
+        RX packets 516708  bytes 515959642 (515.9 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 245491  bytes 45062149 (45.0 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+(base) katya@katya:~/os/lb6$ nmcli device status
+DEVICE          TYPE      STATE          CONNECTION 
+wlp1s0          wifi      подключено     iPhone     
+p2p-dev-wlp1s0  wifi-p2p  отключено      --         
+lo              loopback  не настроенно  --   
+
+
+(base) katya@katya:~/os/lb6$ sudo tc qdisc add dev lo root netem loss 50% 25%
+[sudo] пароль для katya: 
+(base) katya@katya:~/os/lb6$ gcc 16tcpserver.c -o 16tcpserver
+(base) katya@katya:~/os/lb6$ ./16tcpserver &
+[1] 20248
+(base) katya@katya:~/os/lb6$ ./12client
+Сообщение для отправки на сервер:
+hello
+Сообщение от клиента 4: hello
+Ответ сервера: hello
+Сообщение для отправки на сервер:
+katya
+Сообщение от клиента 4: katya
+Ответ сервера: katya
+Сообщение для отправки на сервер:
+
+Завершение работы клиетна
+Пустое сообщение от клиента, поток завершается
+\
+
+
+(base) katya@katya:~/os/lb6$ cat 17server.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include "shm.h"
+
+int *buf;
+int shmid;
+int semaphore;
+
+void handler(int sig)
+{
+    // удаление сегмента разделяемой памяти и семафора
+    shmdt(buf);
+    shmctl(shmid, IPC_RMID, 0);
+    semctl(semaphore, 0, IPC_RMID);
+}
+
+int main()
+{
+    signal(SIGINT, handler);
+    // создаем участок разделяемой памяти
+    shmid = shmget(KEY, (BUF_SIZE + 1) * sizeof(int), IPC_CREAT | 0666);
+    // получаем адрес выделенной разделяемой памяти
+    buf = (int*)shmat(shmid, 0, 0);
+
+    // создаем массив из 3 семафоров
+    // 0 - число свободных ячеек
+    // 1 - число занятых ячеек
+    // 2 - работа с памятью
+    semaphore = semget(KEY, 3, IPC_CREAT | 0666);
+    // инициализируем память -1 и говорим, что она свободна
+    for (int i = 0; i < BUF_SIZE + 1; ++i)
+        buf[i] = -1;
+    // устанавливаем все ячейки свободными и разблокируем память
+    semop(semaphore, set_free, 1);
+    semop(semaphore, mem_unlock, 1);
+    puts("Нажать кнопку для начала работы");
+    getchar();
+    for (int i =0; i < 20; ++i) {
+        // ждем пока будет хотя бы одна непустая ячейка
+        semop(semaphore, wait_not_empty, 1);
+        // ждем возможности взаимодействовать с памятью
+        semop(semaphore, mem_lock, 1);
+        // читаем информацию из памяти
+        // требуемые индекс лежит после основного массива
+        int res = buf[buf[BUF_SIZE]];
+        buf[BUF_SIZE] = buf[BUF_SIZE] - 1;
+        printf("Получен %d из ячейки %d\n", res, buf[BUF_SIZE]+1);
+        // освобождаем память и увеличиваем число пустых ячеек
+        semop(semaphore, mem_unlock, 1);
+        semop(semaphore, release_empty, 1);
+    }
+    kill(getpid(), SIGINT);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ cat 17client.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include "shm.h"
+
+int *buf;
+
+int main()
+{
+    // присоединились к разделяемой памяти и семафорам
+    int shmid = shmget(KEY, (BUF_SIZE+1)*sizeof(int), 0666);
+    buf = (int*)shmat(shmid, 0, 0);
+    int semaphore = semget(KEY, 3, 0666);
+    puts("Нажать кнопку для начала работы");
+    getchar();
+    int val = 0;
+    for (int i = 0; i < 10; ++i) {
+        // ждем свободных ячеек
+        semop(semaphore, wait_not_full, 1);
+        // ждем доступа к разделяемой памяти
+        semop(semaphore, mem_lock, 1);
+        // пишем в ячейку
+        ++buf[BUF_SIZE];
+        printf("Пишем %d в ячейку %d\n", val, buf[BUF_SIZE]);
+        buf[buf[BUF_SIZE]] = val++;
+        // освобождаем доступ к памяти
+        semop(semaphore, mem_unlock, 1);
+        // увеличиваем счетчик занятых ячеек
+        semop(semaphore, release_full, 1);
+    }
+    shmdt(buf);
+    return 0;
+}
+(base) katya@katya:~/os/lb6$ gcc 17server.c -o 17server
+(base) katya@katya:~/os/lb6$ gcc 17client.c -o 17client
+(base) katya@katya:~/os/lb6$ cat shm.h
+#define KEY 2004
+#define BUF_SIZE 15
+
+static struct sembuf set_free[1] = { 0, BUF_SIZE, 0 };
+
+static struct sembuf wait_not_full[1] = { 0, -1, 0 };
+static struct sembuf wait_not_empty[1] = { 1, -1, 0 };
+
+static struct sembuf release_empty[1] = { 0, 1, 0 };
+static struct sembuf release_full[1] = { 1, 1, 0 };
+
+static struct sembuf mem_lock[1] = { 2, -1, 0 };
+static struct sembuf mem_unlock[1] = { 2, 1, 0 };
+
+
+(base) katya@katya:~/os/lb6$ ./17server
+Нажать кнопку для начала работы
+
+Получен 5 из ячейки 5
+Получен 6 из ячейки 5
+Получен 7 из ячейки 5
+Получен 8 из ячейки 5
+Получен 9 из ячейки 5
+Получен 4 из ячейки 4
+Получен 3 из ячейки 3
+Получен 2 из ячейки 2
+Получен 1 из ячейки 1
+Получен 0 из ячейки 0
+(base) katya@katya:~/os/lb6$ ./17client
+Нажать кнопку для начала работы
+
+Пишем 0 в ячейку 0
+Пишем 1 в ячейку 1
+Пишем 2 в ячейку 2
+Пишем 3 в ячейку 3
+Пишем 4 в ячейку 4
+Пишем 5 в ячейку 5
+Пишем 6 в ячейку 5
+Пишем 7 в ячейку 5
+Пишем 8 в ячейку 5
+Пишем 9 в ячейку 5
+

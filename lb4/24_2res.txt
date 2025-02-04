@@ -1,0 +1,9 @@
+  19312   19312  TS  19      -   0 sudo taskset 1 ./task24_2
+  19313   19313  TS  19      -   0 sudo taskset 1 ./task24_2
+  19314   19314  RR 130     90   - ./task24_2
+  19314   19315  RR  50     10   - ./task24_2
+  19314   19316  RR  60     20   - ./task24_2
+  19314   19317  RR  70     30   - ./task24_2
+  19314   19318  RR  80     40   - ./task24_2
+  19319   19319  RR 130     90   - sh -c ps -eLo pid,tid,cls,pri,rtprio,ni,cmd | grep ./task24_2 > 24_2res.txt
+  19321   19321  RR 130     90   - grep ./task24_2

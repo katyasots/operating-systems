@@ -1,0 +1,7 @@
+   9086    9086  TS  19      -   0 ./task24_1
+   9086    9087  TS  19      -   0 ./task24_1
+   9086    9088  TS  19      -   0 ./task24_1
+   9086    9089  TS  19      -   0 ./task24_1
+   9086    9090  TS  19      -   0 ./task24_1
+   9091    9091  TS  19      -   0 sh -c ps -eLo pid,tid,cls,pri,rtprio,ni,cmd | grep ./task24_1 > 24_1res.txt
+   9093    9093  TS  19      -   0 grep ./task24_1

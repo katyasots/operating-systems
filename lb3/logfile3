@@ -1,0 +1,1405 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+int main(){
+   int pid, n;
+   n = 1;
+   printf("начальное число:%d\n", n);
+   pid = fork();
+   if(pid==-1){
+       perror("fork");
+       exit(1);
+   }
+   if(pid == 0){
+       printf("new pid = %d, pprid = %d\n", getpid(), getppid());
+       //здесь размещаются вычисления, выполняемые процессом-потомком
+       n *= 3;   
+   }
+   else{
+       printf("parrent pid = %d, ppid = %d\n", getpid(), getppid());
+       //здесь размещаются вычисления, выполняемые порождающим процессом
+       n += 10;
+   }
+   printf("итоговое число:%d\n", n);
+   printf("завершение процесса\n");
+   exit(1);
+   return 0;
+}
+
+(base) katya@katya:~/os/lb34$ taskset 0x1 ./task1.out
+начальное число:1
+parrent pid = 6930, ppid = 6396
+итоговое число:11
+завершение процесса
+new pid = 6931, pprid = 1501
+итоговое число:3
+завершение процесса
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+    int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+    }
+}
+
+int main() {
+    // направление вывода в текстовый файл
+    freopen("task3.txt", "w", stdout);
+    pid_t pid;
+
+    for (int i = 0; i < 5; i++) {
+        pid = fork();
+        if (pid == 0) {
+            // дочерний процесс
+            printf("START: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            // трудоемкая задача
+            work();
+            printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            exit(EXIT_SUCCESS);
+        }
+    }
+        // Для наблюдения конкуренции дочерних процессов родительский дожидается их выполнения
+    int status;
+    for (int i = 0; i < 5; i++) {
+        wait(&status);
+    }
+    return 0;
+}
+
+START: pid=8136, ppid=8131, policy=SCHED_OTHER
+START: pid=8135, ppid=8131, policy=SCHED_OTHER
+START: pid=8134, ppid=8131, policy=SCHED_OTHER
+START: pid=8133, ppid=8131, policy=SCHED_OTHER
+START: pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8135, ppid=8131, policy=SCHED_OTHER
+END: pid=8135, ppid=8131, policy=SCHED_OTHER
+pid=8134, ppid=8131, policy=SCHED_OTHER
+END: pid=8134, ppid=8131, policy=SCHED_OTHER
+pid=8132, ppid=8131, policy=SCHED_OTHER
+END: pid=8132, ppid=8131, policy=SCHED_OTHER
+pid=8136, ppid=8131, policy=SCHED_OTHER
+END: pid=8136, ppid=8131, policy=SCHED_OTHER
+pid=8133, ppid=8131, policy=SCHED_OTHER
+END: pid=8133, ppid=8131, policy=SCHED_OTHER
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+    int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+    }
+}
+
+int main() {
+    // направление вывода в текстовый файл
+    //freopen("task3.txt", "w", stdout);
+    pid_t pid;
+
+    ////////////////////////////////////////
+    // изменение процедуры планирования
+    struct sched_param param;
+    param.sched_priority = 1;
+    if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
+        perror("sched_setscheduler");
+        exit(EXIT_FAILURE);
+    }
+    ///////////////////////////////////////
+  for (int i = 0; i < 5; i++) {
+        pid = fork();
+        if (pid == 0) {
+            // дочерний процесс
+            printf("START: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            // трудоемкая задача
+            work();
+            printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            exit(EXIT_SUCCESS);
+        }
+    }
+    // Для наблюдения конкуренции дочерних процессов родительский дожидается их выполнения
+    int status;
+    for (int i = 0; i < 5; i++) {
+        wait(&status);
+    }
+    return 0;
+}
+
+START: pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+pid=18431, ppid=18430, policy=SCHED_FIFO
+END: pid=18431, ppid=18430, policy=SCHED_FIFO
+START: pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+pid=18432, ppid=18430, policy=SCHED_FIFO
+END: pid=18432, ppid=18430, policy=SCHED_FIFO
+START: pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+pid=18433, ppid=18430, policy=SCHED_FIFO
+END: pid=18433, ppid=18430, policy=SCHED_FIFO
+START: pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+pid=18434, ppid=18430, policy=SCHED_FIFO
+END: pid=18434, ppid=18430, policy=SCHED_FIFO
+START: pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+pid=18435, ppid=18430, policy=SCHED_FIFO
+END: pid=18435, ppid=18430, policy=SCHED_FIFO
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main(){
+    int pid, ppid, status;
+    pid = getpid();
+    ppid = getppid();
+    printf("FATHER PARAM: pid=%i  ppid=%i\n", pid, ppid);
+    if (fork()==0)
+        execl("son", "son", NULL);
+    system("ps -xf > file.txt");
+    wait(&status);
+    printf("Child process is finished with status %d\n", status);
+
+    return 0;
+}
+
+son.c:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main(){
+    int pid, ppid;
+    pid = getpid();
+    ppid = getppid();
+    printf("SON PARAMS: pid=%i  ppid=%i\n", pid, ppid);
+    sleep(5);
+    //exit(1); статус завершения 256
+    return 0; // статус завершения 0
+}
+
+
+(base) katya@katya:~/os/lb34$ taskset 1 ./father.out
+FATHER PARAM: pid=20482  ppid=18401
+SON PARAMS: pid=20483  ppid=20482
+Child process is finished with status 0
+
+ 18401 pts/2    Ss     0:00      \_ bash
+  20482 pts/2    S+     0:00          \_ ./father.out
+  20483 pts/2    S+     0:00              \_ son
+  20484 pts/2    S+     0:00              \_ sh -c ps -xf > file.txt
+  20485 pts/2    R+     0:00                  \_ ps -xf
+
+
+ 18401 pts/2    Ss+    0:00  |   \_ bash
+  20572 pts/2    S      0:00  |       \_ ./father.out
+  20573 pts/2    S      0:00  |           \_ son
+  20574 pts/2    S      0:00  |           \_ sh -c ps -xf > file.txt
+  20575 pts/2    R      0:00  |               \_ ps -xf
+
+файл task8.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+int main(int argc, char **argv){
+    int pid = fork();
+    char* const vector_args[] = {"task8_1", "first_arg", "sec_arg", NULL};
+    char* const env[] = {"ENV_VARIABLE=env_variable", NULL};
+    if(pid == 0){
+        switch (argv[1][0])
+        {
+        case '1':
+        // замена дочернего процесса программой с аргументами
+            execl("task8_1", "task8_1", "first_arg", "sec_arg", NULL);
+            break;
+        
+        case '2':
+        // замена дочернего процесса программой с аргументами в виде массива
+            execv('task8_1', vector_args);
+            break;
+
+        case '3':
+        // возможность использ переменную среду PATH для поиска исполняемого файла
+            execlp("echo", "echo", "some_info", NULL);
+            break;
+        
+        case '4':
+        // замена дочернего процесса программой, передавая ее окружение в массиве env
+            execle("task8_1", "task8_1", "some_info", NULL, env);
+            break;
+        }
+    }
+    wait(NULL);
+    return 0;
+}
+
+
+Файл task8_1.c:
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+extern char **environ;
+
+int main(int argc, char **argv){
+    system("ps -ft > 8file.txt");
+    for(int i=0; environ[i]; i++)
+        puts(environ[i]);
+    for(int i=1; argv[i]; i++)
+        puts(argv[i]);
+    return 0;
+}
+
+Вариации запуска программы:
+(base) katya@katya:~/os/lb34$ ./task8.out 1
+SHELL=/bin/bash
+SESSION_MANAGER=local/katya:@/tmp/.ICE-unix/1813,unix/katya:/tmp/.ICE-unix/1813
+QT_ACCESSIBILITY=1
+COLORTERM=truecolor
+XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+SSH_AGENT_LAUNCHER=gnome-keyring
+XDG_MENU_PREFIX=gnome-
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+GTK_IM_MODULE=ibus
+CONDA_EXE=/home/katya/anaconda3/bin/conda
+_CE_M=
+GNOME_SHELL_SESSION_MODE=ubuntu
+SSH_AUTH_SOCK=/run/user/1000/keyring/ssh
+XMODIFIERS=@im=ibus
+DESKTOP_SESSION=ubuntu
+GTK_MODULES=gail:atk-bridge
+PWD=/home/katya/os/lb34
+LOGNAME=katya
+XDG_SESSION_DESKTOP=ubuntu
+XDG_SESSION_TYPE=x11
+CONDA_PREFIX=/home/katya/anaconda3
+GPG_AGENT_INFO=/run/user/1000/gnupg/S.gpg-agent:0:1
+SYSTEMD_EXEC_PID=1836
+XAUTHORITY=/run/user/1000/gdm/Xauthority
+WINDOWPATH=2
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+HOME=/home/katya
+USERNAME=katya
+LANG=ru_RU.UTF-8
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+XDG_CURRENT_DESKTOP=ubuntu:GNOME
+VTE_VERSION=6800
+CONDA_PROMPT_MODIFIER=(base) 
+GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/47c27a63_7c77_4707_8726_616db8ac6022
+LESSCLOSE=/usr/bin/lesspipe %s %s
+XDG_SESSION_CLASS=user
+TERM=xterm-256color
+_CE_CONDA=
+LESSOPEN=| /usr/bin/lesspipe %s
+USER=katya
+GNOME_TERMINAL_SERVICE=:1.646
+CONDA_SHLVL=1
+DISPLAY=:1
+SHLVL=1
+QT_IM_MODULE=ibus
+PROJ_LIB=/home/katya/anaconda3/share/proj
+CONDA_PYTHON_EXE=/home/katya/anaconda3/bin/python
+XDG_RUNTIME_DIR=/run/user/1000
+CONDA_DEFAULT_ENV=base
+XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+PATH=/home/katya/anaconda3/bin:/home/katya/anaconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
+GDMSESSION=ubuntu
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+OLDPWD=/home/katya
+_=./task8.out
+first_arg
+sec_arg
+
+(base) katya@katya:~/os/lb34$ ./task8.out 2
+SHELL=/bin/bash
+SESSION_MANAGER=local/katya:@/tmp/.ICE-unix/1813,unix/katya:/tmp/.ICE-unix/1813
+QT_ACCESSIBILITY=1
+COLORTERM=truecolor
+XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+SSH_AGENT_LAUNCHER=gnome-keyring
+XDG_MENU_PREFIX=gnome-
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+GTK_IM_MODULE=ibus
+CONDA_EXE=/home/katya/anaconda3/bin/conda
+_CE_M=
+GNOME_SHELL_SESSION_MODE=ubuntu
+SSH_AUTH_SOCK=/run/user/1000/keyring/ssh
+XMODIFIERS=@im=ibus
+DESKTOP_SESSION=ubuntu
+GTK_MODULES=gail:atk-bridge
+PWD=/home/katya/os/lb34
+LOGNAME=katya
+XDG_SESSION_DESKTOP=ubuntu
+XDG_SESSION_TYPE=x11
+CONDA_PREFIX=/home/katya/anaconda3
+GPG_AGENT_INFO=/run/user/1000/gnupg/S.gpg-agent:0:1
+SYSTEMD_EXEC_PID=1836
+XAUTHORITY=/run/user/1000/gdm/Xauthority
+WINDOWPATH=2
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+HOME=/home/katya
+USERNAME=katya
+LANG=ru_RU.UTF-8
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.
+zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+XDG_CURRENT_DESKTOP=ubuntu:GNOME
+VTE_VERSION=6800
+CONDA_PROMPT_MODIFIER=(base) 
+GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/47c27a63_7c77_4707_8726_616db8ac6022
+LESSCLOSE=/usr/bin/lesspipe %s %s
+XDG_SESSION_CLASS=user
+TERM=xterm-256color
+_CE_CONDA=
+LESSOPEN=| /usr/bin/lesspipe %s
+USER=katya
+GNOME_TERMINAL_SERVICE=:1.646
+CONDA_SHLVL=1
+DISPLAY=:1
+SHLVL=1
+QT_IM_MODULE=ibus
+PROJ_LIB=/home/katya/anaconda3/share/proj
+CONDA_PYTHON_EXE=/home/katya/anaconda3/bin/python
+XDG_RUNTIME_DIR=/run/user/1000
+CONDA_DEFAULT_ENV=base
+XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+PATH=/home/katya/anaconda3/bin:/home/katya/anaconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
+GDMSESSION=ubuntu
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+OLDPWD=/home/katya
+_=./task8.out
+first_arg
+sec_arg
+
+(base) katya@katya:~/os/lb34$ ./task8.out 3
+some_info
+
+(base) katya@katya:~/os/lb34$ ./task8.out 4
+ENV_VARIABLE=env_variable
+some_info
+
+task9.c:
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+system("ps -ft > task9.txt");
+
+    for(int i=0; i<3; i++){
+        int status;
+        int ret_pid = wait(&status);
+            printf("pid %d ended, status %d\n", ret_pid, WEXITSTATUS(status));
+    }
+    return 0;
+}
+
+(base) katya@katya:~/os/lb34$ ./task9
+parent pid=5732, ppid=5551
+child0 pid=5733, ppid=5732
+child1 pid=5734, ppid=5732
+child2 pid=5735, ppid=5732
+pid 5733 ended, status 0
+pid 5734 ended, status 1
+pid 5735 ended, status 2
+(base) katya@katya:~/os/lb34$ cat task9.txt
+    PID TTY      STAT   TIME COMMAND
+   5551 pts/2    Ss     0:00 bash
+   5732 pts/2    S+     0:00  \_ ./task9
+   5733 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5734 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5735 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5736 pts/2    S+     0:00      \_ sh -c ps -ft > task9.txt
+   5737 pts/2    R+     0:00          \_ ps -ft
+
+task10.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+    int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+    }
+}
+
+int main() {
+    // направление вывода в текстовый файл
+    //freopen("task10.txt", "w", stdout);
+
+    // для сына создается потомок, т е внук родительского
+    if (!fork()) fork();
+    printf("START: pid=%d, ppid=%d, policy=", getpid(), getppid());
+    switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            // трудоемкая задача
+            work();
+            printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+         
+    
+
+
+
+int main(){
+    int pid[3];
+    printf("parent pid=%d, ppid=%d\n", getpid(), getppid());
+
+    if(pid[0]=fork() == 0)
+        execl("task9_child", "child0", NULL);
+    if(pid[1]=fork() == 0)
+        execl("task9_child", "child1", NULL);
+    if(pid[2]=fork() == 0)
+        execl("task9_child", "child2", NULL);
+    system("ps -ft > task9.txt");
+
+    for(int i=0; i<3; i++){
+        int status;
+        int ret_pid = wait(&status);
+            printf("pid %d ended, status %d\n", ret_pid, status);
+    }
+    return 0;
+}
+
+task9_child.c:
+#include <stdio.h>
+#include <unistd.h>
+
+int main(int argc, char **argv){
+    printf("%s pid=%d, ppid=%d\n", argv[0], getpid(), getppid());
+    return (int)argv[0][5] - '0';
+}
+
+(base) katya@katya:~/os/lb34$ ./task9
+parent pid=5568, ppid=5551
+child0 pid=5569, ppid=5568
+child1 pid=5570, ppid=5568
+child2 pid=5571, ppid=5568
+pid 5569 ended, status 0
+pid 5570 ended, status 256
+pid 5571 ended, status 512
+(base) katya@katya:~/os/lb34$ cat task9.txt
+    PID TTY      STAT   TIME COMMAND
+   5551 pts/2    Ss     0:00 bash
+   5568 pts/2    S+     0:00  \_ ./task9
+   5569 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5570 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5571 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5572 pts/2    S+     0:00      \_ sh -c ps -ft > task9.txt
+   5573 pts/2    R+     0:00          \_ ps -ft
+
+
+Изменим task9.c:
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+
+int main(){
+    int pid[3];
+    printf("parent pid=%d, ppid=%d\n", getpid(), getppid());
+
+    if(pid[0]=fork() == 0)
+        execl("task9_child", "child0", NULL);
+    if(pid[1]=fork() == 0)
+        execl("task9_child", "child1", NULL);
+    if(pid[2]=fork() == 0)
+        execl("task9_child", "child2", NULL);
+         // Для наблюдения конкуренции дочерних процессов родительский дожидается их выполнения
+    wait(NULL);
+    return 0;
+}
+
+(base) katya@katya:~/os/lb34$ taskset 1 ./task10.out
+START: pid=8572, ppid=5551, policy=SCHED_OTHER
+START: pid=8573, ppid=8572, policy=SCHED_OTHER
+START: pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8573, ppid=8572, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8572, ppid=5551, policy=SCHED_OTHER
+END: pid=8572, ppid=5551, policy=SCHED_OTHER
+pid=8574, ppid=8573, policy=SCHED_OTHER
+END: pid=8574, ppid=8573, policy=SCHED_OTHER
+pid=8573, ppid=1524, policy=SCHED_OTHER
+END: pid=8573, ppid=1524, policy=SCHED_OTHER
+
+Изменение политики планирования в task10.c:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+
+  int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+    }
+}
+
+int main() {
+    // направление вывода в текстовый файл
+    //freopen("task10.txt", "w", stdout);
+
+    //изменение политики планирования
+    struct sched_param param;
+    param.sched_priority = 1;
+    if(sched_setscheduler(0, SCHED_FIFO, &param) == -1){
+        perror("sched_setscheduler");
+        exit(EXIT_FAILURE);
+    }
+
+    // для сына создается потом, т е внук родительского
+    if (!fork()) fork();
+    printf("START: pid=%d, ppid=%d, policy=", getpid(), getppid());
+    switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            // трудоемкая задача
+            work();
+            printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+       
+    
+
+    // Для наблюдения конкуренции дочерних процессов родительский дожидается их выполнения
+    wait(NULL);
+    return 0;
+}
+ 
+(base) katya@katya:~/os/lb34$ sudo taskset 1 ./task10.out
+START: pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+pid=8767, ppid=8766, policy=SCHED_FIFO
+END: pid=8767, ppid=8766, policy=SCHED_FIFO
+START: pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+pid=8768, ppid=8767, policy=SCHED_FIFO
+END: pid=8768, ppid=8767, policy=SCHED_FIFO
+START: pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+pid=8781, ppid=8768, policy=SCHED_FIFO
+END: pid=8781, ppid=8768, policy=SCHED_FIFO
+
+task 10_3.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+    int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+
+    }
+}
+
+int main()
+{
+    // Изменение политики планирования
+    struct sched_param param;
+    param.sched_priority = 1;
+    if (sched_setscheduler(0, SCHED_RR, &param) == -1) {
+        perror("sched_setscheduler");
+        exit(EXIT_FAILURE);
+    }
+ // для сына создается потомок, т е внук родительского
+    if (!fork()) {
+        param.sched_priority = 99;
+        sched_setscheduler(0, SCHED_RR, &param);
+        if (!fork()) {
+            param.sched_priority = 99;
+            sched_setscheduler(0, SCHED_RR, &param);
+        } else {
+            sched_yield();
+        }
+    }
+    sched_getparam(0, &param);
+    printf("START: pid=%d, ppid=%d, priority=%d, policy=", getpid(), getppid(), param.sched_priority);
+    switch (sched_getscheduler(0))
+    {
+        case SCHED_FIFO:
+            printf("SCHED_FIFO\n");
+            break;
+        case SCHED_RR:
+            printf("SCHED_RR\n");
+            break;
+        case SCHED_OTHER:
+            printf("SCHED_OTHER\n");
+            break;
+    }
+    // запускается трудоемкая задача
+    work();
+    printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+    switch (sched_getscheduler(0))
+    {
+        case SCHED_FIFO:
+            printf("SCHED_FIFO\n");
+            break;
+        case SCHED_RR:
+            printf("SCHED_RR\n");
+            break;
+        case SCHED_OTHER:
+            printf("SCHED_OTHER\n");
+            break;
+    }
+    // родители дожидаются детей
+    wait(NULL);
+    return 0;
+}
+
+(base) katya@katya:~/os/lb34$ sudo taskset 1 ./task10_3.out
+START: pid=9916, ppid=9915, priority=1, policy=SCHED_RR
+START: pid=9918, ppid=9917, priority=99, policy=SCHED_RR
+START: pid=9917, ppid=9916, priority=99, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+pid=9917, ppid=9916, policy=SCHED_RR
+END: pid=9917, ppid=9916, policy=SCHED_RR
+pid=9918, ppid=9917, policy=SCHED_RR
+END: pid=9918, ppid=9917, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+pid=9916, ppid=9915, policy=SCHED_RR
+END: pid=9916, ppid=9915, policy=SCHED_RR
+
+
+task10_4.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sched.h>
+
+
+void work() {
+    int n = 0;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1000000000; j++) 
+            n += 1;
+        printf("pid=%d, ppid=%d, policy=", getpid(), getppid());
+        switch (sched_getscheduler(0))
+        {
+            case SCHED_FIFO:
+                printf("SCHED_FIFO\n");
+                break;
+            case SCHED_RR:
+                printf("SCHED_RR\n");
+                break;
+            case SCHED_OTHER:
+                printf("SCHED_OTHER\n");
+                break;
+        }
+
+    }
+}
+
+int main(){
+    pid_t pid;
+    struct sched_param param;
+    for(int i=0; i<4; i++){
+        pid = fork();
+        if (pid==0){//дочерний процесс
+            //чет номер RR, нечет FIFO, приоритет одинаковый
+            param.sched_priority = 50;
+            if(i%2) 
+                sched_setscheduler(0, SCHED_FIFO, &param);
+            else sched_setscheduler(0, SCHED_RR, &param);
+            printf("START: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                    break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            // трудоемкая задача
+            work();
+            printf("END: pid=%d, ppid=%d, policy=", getpid(), getppid());
+            switch (sched_getscheduler(0))
+            {
+                case SCHED_FIFO:
+                    printf("SCHED_FIFO\n");
+                    break;
+                case SCHED_RR:
+                    printf("SCHED_RR\n");
+                  break;
+                case SCHED_OTHER:
+                    printf("SCHED_OTHER\n");
+                    break;
+            }
+            exit(EXIT_SUCCESS);
+        }
+    }
+    // Для наблюдения конкуренции дочерних процессов родительский дожидается их выполнения
+    int status;
+    for (int i = 0; i < 4; i++) {
+        wait(&status);
+    }
+    return 0;
+}
+
+(base) katya@katya:~/os/lb34$ gcc task10_4.c -o task10_4.out
+(base) katya@katya:~/os/lb34$ sudo taskset 1 ./task10_4.out
+START: pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+START: pid=15443, ppid=15440, policy=SCHED_RR
+START: pid=15442, ppid=15440, policy=SCHED_FIFO
+START: pid=15441, ppid=15440, policy=SCHED_RR
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15444, ppid=15440, policy=SCHED_FIFO
+END: pid=15444, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15442, ppid=15440, policy=SCHED_FIFO
+END: pid=15442, ppid=15440, policy=SCHED_FIFO
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+pid=15443, ppid=15440, policy=SCHED_RR
+END: pid=15443, ppid=15440, policy=SCHED_RR
+pid=15441, ppid=15440, policy=SCHED_RR
+END: pid=15441, ppid=15440, policy=SCHED_RR
+
+ task11.c:
+#include <stdio.h>
+#include <sched.h>
+#include <sys/mman.h>
+#include <time.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
+int main () {
+    struct sched_param shdprm;
+    struct timespec qp;
+    int i, pid, pid1, pid2, pid3, ppid, status;
+
+    pid = getpid();
+    ppid = getppid();
+    printf("FATHER PARAMS: pid=%i ppid=%i\n", pid, ppid);
+
+    if (nice(1000) == -1)
+        perror("NICE");
+    else
+        printf("Nice value = %d\n", nice(0));
+
+    shdprm.sched_priority = 50;
+    if (sched_setscheduler(pid, SCHED_RR, &shdprm) == -1)
+        perror("SCHED_SETSCHEDULER_1");
+
+    if (sched_rr_get_interval(pid, &qp) == -1)
+        perror("SCHED_RR_GET_INTERVAL");
+
+    else
+        printf("Квант при циклическом планировании: %ld сек %ld нс\n", qp.tv_sec, qp.tv_nsec);
+    pid1 = fork();
+    
+    if (pid1 == 0) {
+        if (sched_rr_get_interval(pid1, &qp) == -1)
+            perror("SCHED_RR_GET_INTERVAL");
+        else
+            printf("SON: Квант процессорного времени: %ld сек %ld нс\n",qp.tv_sec, qp.tv_nsec);
+        execl("./son", "son", NULL);
+        exit(EXIT_FAILURE);
+    }
+    printf("Процесс с pid = %d завершен\n", wait(&status));
+    return 0;
+}
+
+
+(base) katya@katya:~/os/lb34$ ./task11.out
+FATHER PARAMS: pid=17250 ppid=15258
+Nice value = 19
+SCHED_SETSCHEDULER_1: Operation not permitted
+Квант при циклическом планировании: 0 сек 20000000 нс
+SON: Квант процессорного времени: 0 сек 20000000 нс
+SON PARAMS: pid=17251  ppid=17250
+Процесс с pid = 17251 завершен
+
+
+#include <stdio.h>
+#include <sched.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+
+
+
+
+void itoa(char *buf, int value) {
+    sprintf(buf, "%d", value);
+}
+
+
+
+
+int main() {
+    int status;
+    int fdrd, fdwr;
+    char str1[10], str2[10];
+    struct sched_param param;
+    param.sched_priority = 1;
+    sched_setscheduler(0, SCHED_RR, &param);
+
+
+    // Заблокировать все страницы памяти процесса в оперативной памяти
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
+        perror("mlockall error");
+
+
+
+
+    // Открыть файл для чтения и файла для записи
+    if ((fdrd = open("task12_input.txt", O_RDONLY)) == -1)
+        perror("Opening file");
+    if ((fdwr = creat("task12_output.txt", 0666)) == -1)
+        perror("Creating file");
+    // Преобразовать дескрипторы файлов в строковые значения
+
+
+    itoa(str1, fdrd);
+    itoa(str2,fdwr);
+    // Создать два процесса-потомка
+    for (int i = 0; i < 2; i++) {
+        if (fork() == 0) {
+            param.sched_priority = 90;
+            sched_setscheduler(0, SCHED_RR, &param);
+            execl("12son.out", "son12", str1, str2, NULL);
+        }
+    }
+        // Ждем завершения детей
+    for (int i = 0; i < 2; i++)
+        printf("Process pid = %d completed\n", wait(&status));
+    // Закрыть файл для чтения
+    if (close(fdrd) != 0)
+        perror("Closing file");
+    
+    return 0;
+}
+
+
+12son.c:
+#include <sched.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+
+
+
+int main(int argc, char *argv[]) {
+    // Заблокировать все страницы памяти процесса в оперативной памяти
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
+        perror("mlockall error");
+
+
+    char c;
+    char buff[3];
+    int pid, ppid;
+    int fdrd = atoi(argv[1]); // Преобразовать строковый параметр входного файла в целочисленный дескриптор файла
+    int fdwr = atoi(argv[2]); // Преобразовать строковый параметр выходного файла в целочисленный дескриптор файла
+    pid = getpid(); 
+    ppid = getppid();
+    printf("son file descriptor = %d\n", fdrd);
+    printf("son params: pid=%i ppid=%i\n", pid, ppid);
+    
+    // Работа с файлами
+    for(;;)
+    {
+        sleep(2); 
+        if (read(fdrd,&c,1) != 1)
+            return 0;
+        write(fdwr,&c,1);
+        printf("pid = %d: %c\n", pid, c);
+        // if (close(fdrd) != 0)
+        //     perror("Closing file!");
+    }
+}
+
+
+(base) katya@katya:~/os/lb34$ sudo taskset 1 ./task12.out
+son file descriptor = 3
+son params: pid=18197 ppid=18196
+son file descriptor = 3
+son params: pid=18199 ppid=18196
+pid = 18197: k
+pid = 18199: a
+pid = 18197: t
+pid = 18199: y
+pid = 18197: a
+pid = 18199:  
+pid = 18197: s
+pid = 18199: o
+pid = 18197: t
+pid = 18199: s
+pid = 18197: 
+
+
+Process pid = 18199 completed
+Process pid = 18197 completed
+(base) katya@katya:~/os/lb34$ cat task12_input.txt
+katya sots
+(base) katya@katya:~/os/lb34$ cat task12_output.txt
+katya sots
+
+
+Изменим 12son.c:
+#include <sched.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+
+
+
+int main(int argc, char *argv[]) {
+    // Заблокировать все страницы памяти процесса в оперативной памяти
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) < 0)
+        perror("mlockall error");
+
+
+    char c;
+    char buff[3];
+   int pid, ppid;
+    int fdrd = atoi(argv[1]); // Преобразовать строковый параметр входного файла в целочисленный дескриптор файла
+    int fdwr = atoi(argv[2]); // Преобразовать строковый параметр выходного файла в целочисленный дескриптор файла
+    pid = getpid(); 
+    ppid = getppid();
+    printf("son file descriptor = %d\n", fdrd);
+    printf("son params: pid=%i ppid=%i\n", pid, ppid);
+    system("ps -o uid,gid,ruid,pid,ppid,pgid,tty,vsz,stat,command > 12ps_info.txt");
+    // Работа с файлами
+    for(;;)
+    {
+        sleep(2); 
+        if (read(fdrd,&c,1) != 1)
+            return 0;
+        write(fdwr,&c,1);
+        printf("pid = %d: %c\n", pid, c);
+        if (close(fdrd) != 0)
+            perror("Closing file!");
+    }
+}
+
+
+(base) katya@katya:~/os/lb34$ sudo taskset 1 ./task12.out
+son file descriptor = 3
+son params: pid=18396 ppid=18395
+son file descriptor = 3
+son params: pid=18398 ppid=18395
+pid = 18396: k
+pid = 18398: a
+Process pid = 18396 completed
+Process pid = 18398 completed
+(base) katya@katya:~/os/lb34$ cat task12_output.txt
+ka(base) katya@katya:~/os/lb34$ cat 12ps_info.txt
+  UID   GID  RUID     PID    PPID    PGID TT          VSZ STAT COMMAND
+    0     0  1000   18394   18393   18394 pts/3     14428 Ss   sudo taskset 1 ./task12.out
+    0     0     0   18395   18394   18395 pts/3      2644 SL+  ./task12.out
+    0     0     0   18396   18395   18395 pts/3      2776 SL+  son12 3 4
+    0     0     0   18398   18395   18395 pts/3      2776 SL+  son12 3 4
+    0     0     0   18409   18398   18395 pts/3      2892 R+   sh -c ps -o uid,gid,ruid,pid,ppid,pgid,tty,vsz,stat,command > 12ps_info.txt
+    0     0     0   18410   18409   18395 pts/3     12712 R+   ps -o uid,gid,ruid,pid,ppid,pgid,tty,vsz,stat,command
+
+
+
+

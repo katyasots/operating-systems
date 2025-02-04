@@ -1,0 +1,15 @@
+    PID TTY      STAT   TIME COMMAND
+   8349 pts/2    Ss     0:00 bash
+   8762 pts/2    S+     0:00  \_ ./father
+   8768 pts/2    S+     0:00      \_ passive_son
+   8770 pts/2    R+     0:01      \_ active_son
+   8771 pts/2    S+     0:00      \_ sh -c ps -ft >> res.txt
+   8772 pts/2    R+     0:00          \_ ps -ft
+SEND PASSIVE 1716071917
+
+GET PASSIVE 1716071917
+
+SEND ACTIVE 1716071917
+
+GET ACTIVE 1716071917
+

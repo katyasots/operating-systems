@@ -1,0 +1,6 @@
+    PID TTY      STAT   TIME COMMAND
+  12725 pts/1    Ss     0:00 bash
+  12889 pts/1    S+     0:00  \_ ./task8.out 4
+  12890 pts/1    S+     0:00      \_ task8_1 some_info
+  12891 pts/1    S+     0:00          \_ sh -c ps -ft > 8file.txt
+  12892 pts/1    R+     0:00              \_ ps -ft

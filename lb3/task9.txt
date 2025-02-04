@@ -1,0 +1,8 @@
+    PID TTY      STAT   TIME COMMAND
+   5551 pts/2    Ss     0:00 bash
+   5732 pts/2    S+     0:00  \_ ./task9
+   5733 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5734 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5735 pts/2    Z+     0:00      \_ [task9_child] <defunct>
+   5736 pts/2    S+     0:00      \_ sh -c ps -ft > task9.txt
+   5737 pts/2    R+     0:00          \_ ps -ft

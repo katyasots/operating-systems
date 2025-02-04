@@ -1,0 +1,7 @@
+    PID TTY      STAT   TIME COMMAND
+   7741 pts/2    Ss     0:00 bash
+   9613 pts/2    Sl+    0:00  \_ ./task21
+   9624 pts/2    S+     0:00      \_ sh -c ps -ft >> th1_21.txt
+   9626 pts/2    R+     0:00      |   \_ ps -ft
+   9625 pts/2    S+     0:00      \_ sh -c ps -ft >> th2_21.txt
+   9627 pts/2    R+     0:00          \_ ps -ft

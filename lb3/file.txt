@@ -1,0 +1,118 @@
+    PID TTY      STAT   TIME COMMAND
+   1650 tty2     Ssl+   0:00 /usr/libexec/gdm-x-session --run-script env GNOME_SHELL_SESSION_MODE=ubuntu /usr/bin/gnome-session --session=ubuntu
+   1654 tty2     Sl+    4:11  \_ /usr/lib/xorg/Xorg vt2 -displayfd 3 -auth /run/user/1000/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+   1726 tty2     Sl+    0:00  \_ /usr/libexec/gnome-session-binary --session=ubuntu
+   1598 ?        Sl     0:00 /usr/bin/gnome-keyring-daemon --daemonize --login
+   1546 ?        Ss     0:01 /lib/systemd/systemd --user
+   1547 ?        S      0:00  \_ (sd-pam)
+   1553 ?        S<sl   0:00  \_ /usr/bin/pipewire
+   1554 ?        Ssl    0:00  \_ /usr/bin/pipewire-media-session
+   1555 ?        S<sl   0:01  \_ /usr/bin/pulseaudio --daemonize=no --log-target=journal
+   1566 ?        Ss     0:08  \_ /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+   1574 ?        Ssl    0:00  \_ /usr/libexec/gvfsd
+   1914 ?        Sl     0:00  |   \_ /usr/libexec/gvfsd-trash --spawner :1.2 /org/gtk/gvfs/exec_spaw/0
+   1581 ?        Sl     0:00  \_ /usr/libexec/gvfsd-fuse /run/user/1000/gvfs -f
+   1601 ?        Ssl    0:00  \_ /usr/libexec/xdg-document-portal
+   1605 ?        Ssl    0:00  \_ /usr/libexec/xdg-permission-store
+   1622 ?        SNsl   0:00  \_ /usr/libexec/tracker-miner-fs-3
+   1639 ?        Ssl    0:00  \_ /usr/libexec/gvfs-udisks2-volume-monitor
+   1644 ?        Ssl    0:00  \_ /usr/libexec/gvfs-afc-volume-monitor
+   1651 ?        Ssl    0:00  \_ /usr/libexec/gvfs-goa-volume-monitor
+   1657 ?        Sl     0:00  \_ /usr/libexec/goa-daemon
+   1665 ?        Sl     0:00  \_ /usr/libexec/goa-identity-service
+   1667 ?        Ssl    0:00  \_ /usr/libexec/gvfs-gphoto2-volume-monitor
+   1680 ?        Ssl    0:00  \_ /usr/libexec/gvfs-mtp-volume-monitor
+   1803 ?        Ssl    0:00  \_ /usr/libexec/at-spi-bus-launcher
+   1809 ?        S      0:00  |   \_ /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 11 --address=unix:path=/run/user/1000/at-spi/bus_1
+   1822 ?        Ssl    0:00  \_ /usr/libexec/gnome-session-ctl --monitor
+   1834 ?        Ssl    0:00  \_ /usr/libexec/gnome-session-binary --systemd-service --session=ubuntu
+   2068 ?        Sl     0:00  |   \_ /usr/libexec/evolution-data-server/evolution-alarm-notify
+   2074 ?        Sl     0:00  |   \_ /usr/libexec/gsd-disk-utility-notify
+   3449 ?        Sl     0:00  |   \_ update-notifier
+   1857 ?        Ssl    4:17  \_ /usr/bin/gnome-shell
+   3068 ?        SLl    2:34  |   \_ /opt/google/chrome/chrome
+   3073 ?        S      0:00  |   |   \_ cat
+   3074 ?        S      0:00  |   |   \_ cat
+   3121 ?        S      0:00  |   |   \_ /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable
+   3149 ?        Sl     4:27  |   |   |   \_ /opt/google/chrome/chrome --type=gpu-process --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable --gpu-preferences=WAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAABgAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAGAAAAAAAAAAYAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --shared-files --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3122 ?        S      0:00  |   |   \_ /opt/google/chrome/chrome --type=zygote --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable
+   3124 ?        S      0:00  |   |   |   \_ /opt/google/chrome/nacl_helper
+   3127 ?        S      0:00  |   |   |   \_ /opt/google/chrome/chrome --type=zygote --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable
+   3163 ?        Sl     0:01  |   |   |       \_ /opt/google/chrome/chrome --type=utility --utility-sub-type=storage.mojom.StorageService --lang=ru --service-sandbox-type=utility --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3283 ?        Sl     0:32  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --extension-process --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=5 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=759749102 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3327 ?        Sl     0:00  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=12 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=761119611 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3508 ?        Sl     5:49  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=15 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=766467377 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   8287 ?        Sl     0:02  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=74 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=5431399305 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+  19573 ?        Sl     1:28  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=148 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=13609432173 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+  20164 ?        Sl     0:18  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=161 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=14370897335 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+  20551 ?        Sl     0:00  |   |   |       \_ /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --disable-nacl --change-stack-guard-on-fork=enable --lang=ru --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=174 --time-ticks-at-unix-epoch=-1714469235991097 --launch-time-ticks=15525189301 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3153 ?        Sl     0:47  |   |   \_ /opt/google/chrome/chrome --type=utility --utility-sub-type=network.mojom.NetworkService --lang=ru --service-sandbox-type=none --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   3798 ?        Sl     0:00  |   |   \_ /opt/google/chrome/chrome --type=utility --utility-sub-type=audio.mojom.AudioService --lang=ru --service-sandbox-type=none --crashpad-handler-pid=3113 --enable-crash-reporter=c1a97f3d-b714-441d-8e50-b44270760243, --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,7595356901397396309,13921580795812597695,262144
+   5511 ?        SLl    0:53  |   \_ /snap/telegram-desktop/5820/usr/bin/telegram-desktop --
+  19285 ?        Sl     0:00  |   \_ gjs /usr/share/gnome-shell/extensions/ding@rastersoft.com/ding.js -E -P /usr/share/gnome-shell/extensions/ding@rastersoft.com -M 0 -D 0:0:1920:1200:1:27:0:0:0:0
+   1882 ?        Sl     0:00  \_ /usr/libexec/gnome-shell-calendar-server
+   1890 ?        Ssl    0:00  \_ /usr/libexec/dconf-service
+   1895 ?        Ssl    0:00  \_ /usr/libexec/evolution-source-registry
+   1903 ?        Ss     0:00  \_ /snap/snapd-desktop-integration/157/usr/bin/snapd-desktop-integration
+   1972 ?        Sl     0:00  |   \_ /snap/snapd-desktop-integration/157/usr/bin/snapd-desktop-integration
+   1906 ?        Ssl    0:00  \_ /usr/libexec/evolution-calendar-factory
+   1981 ?        Sl     0:00  \_ /usr/bin/gjs /usr/share/gnome-shell/org.gnome.Shell.Notifications
+   1986 ?        Sl     0:01  \_ /usr/libexec/at-spi2-registryd --use-gnome-session
+   2001 ?        Ssl    0:00  \_ /usr/libexec/evolution-addressbook-factory
+   2008 ?        Ss     0:00  \_ sh -c /usr/bin/ibus-daemon --panel disable $([ "$XDG_SESSION_TYPE" = "x11" ] && echo "--xim")
+   2011 ?        Sl     0:05  |   \_ /usr/bin/ibus-daemon --panel disable --xim
+   2088 ?        Sl     0:00  |       \_ /usr/libexec/ibus-dconf
+   2090 ?        Sl     0:02  |       \_ /usr/libexec/ibus-extension-gtk3
+   2227 ?        Sl     0:01  |       \_ /usr/libexec/ibus-engine-simple
+   2010 ?        Ssl    0:00  \_ /usr/libexec/gsd-a11y-settings
+   2014 ?        Ssl    0:00  \_ /usr/libexec/gsd-color
+   2016 ?        Ssl    0:00  \_ /usr/libexec/gsd-datetime
+   2018 ?        Ssl    0:00  \_ /usr/libexec/gsd-housekeeping
+   2022 ?        Ssl    0:00  \_ /usr/libexec/gsd-keyboard
+   2024 ?        Ssl    0:00  \_ /usr/libexec/gsd-media-keys
+   2029 ?        Ssl    0:00  \_ /usr/libexec/gsd-power
+   2034 ?        Ssl    0:00  \_ /usr/libexec/gsd-print-notifications
+   2037 ?        Ssl    0:00  \_ /usr/libexec/gsd-rfkill
+   2038 ?        Ssl    0:00  \_ /usr/libexec/gsd-screensaver-proxy
+   2040 ?        Ssl    0:00  \_ /usr/libexec/gsd-sharing
+   2041 ?        Ssl    0:00  \_ /usr/libexec/gsd-smartcard
+   2042 ?        Ssl    0:00  \_ /usr/libexec/gsd-sound
+   2044 ?        Ssl    0:00  \_ /usr/libexec/gsd-wacom
+   2046 ?        Ssl    0:00  \_ /usr/libexec/gsd-xsettings
+   2115 ?        Sl     0:00  \_ /usr/libexec/gsd-printer
+   2143 ?        Sl     0:00  \_ /usr/libexec/ibus-x11 --kill-daemon
+   2146 ?        Sl     0:00  \_ /usr/libexec/ibus-portal
+   2164 ?        Sl     0:00  \_ /usr/bin/gjs /usr/share/gnome-shell/org.gnome.ScreenSaver
+   2176 ?        Ssl    0:13  \_ /usr/libexec/xdg-desktop-portal
+   2196 ?        Sl     0:04  \_ /snap/snap-store/1113/usr/bin/snap-store --gapplication-service
+   2234 ?        Ssl    0:01  \_ /usr/libexec/xdg-desktop-portal-gnome
+   2387 ?        Ssl    0:00  \_ /usr/libexec/xdg-desktop-portal-gtk
+   2468 ?        Ssl    0:00  \_ /usr/libexec/gvfsd-metadata
+   3113 ?        Sl     0:00  \_ /opt/google/chrome/chrome_crashpad_handler --monitor-self --monitor-self-annotation=ptype=crashpad-handler --database=/home/katya/.config/google-chrome/Crash Reports --metrics-dir=/home/katya/.config/google-chrome --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Ubuntu 22.04.3 LTS --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=119.0.6045.123 --initial-client-fd=5 --shared-client-connection
+   3115 ?        Sl     0:00  \_ /opt/google/chrome/chrome_crashpad_handler --no-periodic-tasks --monitor-self-annotation=ptype=crashpad-handler --database=/home/katya/.config/google-chrome/Crash Reports --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Ubuntu 22.04.3 LTS --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=119.0.6045.123 --initial-client-fd=4 --shared-client-connection
+   4473 ?        Sl     0:16  \_ /usr/bin/nautilus --gapplication-service
+   4505 ?        Sl     0:00  \_ /usr/lib/libreoffice/program/oosplash --writer file:///home/katya/%D0%97%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B8/Usacheva_Daria_lb3.docx
+   4521 ?        Sl     1:03  |   \_ /usr/lib/libreoffice/program/soffice.bin --writer file:///home/katya/%D0%97%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%BA%D0%B8/Usacheva_Daria_lb3.docx
+   4827 ?        Ssl    0:55  \_ /snap/code/157/usr/share/code/code --no-sandbox --force-user-env --unity-launch
+   4829 ?        S      0:00  |   \_ /snap/code/157/usr/share/code/code --type=zygote --no-zygote-sandbox --no-sandbox
+   4830 ?        S      0:00  |   \_ /snap/code/157/usr/share/code/code --type=zygote --no-sandbox
+   4897 ?        Sl     2:51  |   |   \_ /snap/code/157/usr/share/code/code --type=renderer --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/snap/code/157/usr/share/code/resources/app --enable-sandbox --enable-blink-features=HighlightAPI --first-renderer-process --no-sandbox --lang=en-US --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1714469237214162 --launch-time-ticks=1285616241 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version --vscode-window-config=vscode:ff80a149-c31b-4760-bde1-e838639c3869
+   4869 ?        Sl     0:01  |   \_ /snap/code/157/usr/share/code/code --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-sandbox --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   4923 ?        Sl     0:49  |   \_ /snap/code/157/usr/share/code/code --type=gpu-process --disable-gpu-sandbox --no-sandbox --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --gpu-preferences=WAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAABgAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAGAAAAAAAAAAYAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --use-gl=angle --use-angle=swiftshader-webgl --shared-files --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   4961 ?        Sl     0:17  |   \_ /snap/code/157/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --no-sandbox --dns-result-order=ipv4first --inspect-port=0 --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   5047 ?        Sl     0:23  |   |   \_ /home/katya/.vscode/extensions/ms-vscode.cpptools-1.20.2-linux-x64/bin/cpptools
+   4970 ?        Sl     0:06  |   \_ /snap/code/157/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --no-sandbox --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   4972 ?        Sl     0:02  |   \_ /snap/code/157/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --no-sandbox --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   5007 ?        Sl     0:27  |   \_ /snap/code/157/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --no-sandbox --crashpad-handler-pid=4843 --enable-crash-reporter=092b99e2-0088-48c0-9869-fbaece5c6e91,no_channel --user-data-dir=/home/katya/.config/Code --standard-schemes=vscode-webview,vscode-file --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=0,i,3284341435404541580,8660612225562481747,262144 --enable-features=kWebSQLAccess --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version
+   5130 pts/1    Ss+    0:00  |       \_ /usr/bin/bash --init-file /snap/code/157/usr/share/code/resources/app/out/vs/workbench/contrib/terminal/browser/media/shellIntegration-bash.sh
+   4843 ?        Sl     0:00  \_ /snap/code/157/usr/share/code/chrome_crashpad_handler --monitor-self-annotation=ptype=crashpad-handler --no-rate-limit --database=/home/katya/.config/Code/Crashpad --url=appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=4444ae09-04ba-433a-98f4-ed49de21ba70&iid=4444ae09-04ba-433a-98f4-ed49de21ba70&sid=4444ae09-04ba-433a-98f4-ed49de21ba70 --annotation=_companyName=Microsoft --annotation=_productName=VSCode --annotation=_version=1.88.1 --annotation=lsb-release=Ubuntu 22.04.3 LTS --annotation=plat=Linux --annotation=prod=Electron --annotation=ver=28.2.8 --initial-client-fd=46 --shared-client-connection
+   5090 ?        Sl     0:02  \_ /home/katya/.vscode/extensions/ms-vscode.cpptools-1.20.2-linux-x64/bin/cpptools-srv 5047 {E746AE50-7354-4A8C-A2B3-30D616EED105}
+   5354 ?        Sl     0:01  \_ /home/katya/.vscode/extensions/ms-vscode.cpptools-1.20.2-linux-x64/bin/cpptools-srv 5047 {06361114-5B5F-47FD-9731-ED8C6F16FB30}
+  17718 ?        Sl     0:00  \_ /home/katya/.vscode/extensions/ms-vscode.cpptools-1.20.2-linux-x64/bin/cpptools-srv 5047 {7CB3B02E-D744-40AE-A2C3-EF742B2FB10F}
+  18370 ?        Ssl    0:01  \_ /usr/libexec/gnome-terminal-server
+  18401 pts/2    Ss+    0:00  |   \_ bash
+  20572 pts/2    S      0:00  |       \_ ./father.out
+  20573 pts/2    S      0:00  |           \_ son
+  20574 pts/2    S      0:00  |           \_ sh -c ps -xf > file.txt
+  20575 pts/2    R      0:00  |               \_ ps -xf
+  20492 ?        Sl     0:02  \_ /usr/bin/gedit --gapplication-service
